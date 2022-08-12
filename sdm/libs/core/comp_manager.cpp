@@ -344,10 +344,6 @@ DisplayError CompManager::Prepare(Handle display_ctx, HWLayers *hw_layers) {
     return error;
   }
 
-  error = resource_intf_->Stop(display_resource_ctx, hw_layers);
-  if (error != kErrorNone) {
-    DLOGE("Resource stop failed for display = %d", display_comp_ctx->display_type);
-  }
   return error;
 }
 
@@ -409,6 +405,12 @@ DisplayError CompManager::PostCommit(Handle display_ctx, HWLayers *hw_layers) {
   DisplayCompositionContext *display_comp_ctx =
                              reinterpret_cast<DisplayCompositionContext *>(display_ctx);
 
+  Handle &display_resource_ctx = display_comp_ctx->display_resource_ctx;
+  error = resource_intf_->Stop(display_resource_ctx, hw_layers);
+  if (error != kErrorNone) {
+    DLOGE("Resource stop failed for display = %d", display_comp_ctx->display_type);
+  }
+
   error = resource_intf_->PostCommit(display_comp_ctx->display_resource_ctx, hw_layers);
   if (error != kErrorNone) {
     return error;
@@ -435,14 +437,13 @@ void CompManager::Purge(Handle display_ctx) {
   display_comp_ctx->strategy->Purge();
 }
 
-DisplayError CompManager::SetIdleTimeoutMs(Handle display_ctx, uint32_t active_ms,
-                                           uint32_t inactive_ms) {
+DisplayError CompManager::SetIdleTimeoutMs(Handle display_ctx, uint32_t active_ms) {
   SCOPE_LOCK(locker_);
 
   DisplayCompositionContext *display_comp_ctx =
                              reinterpret_cast<DisplayCompositionContext *>(display_ctx);
 
-  return display_comp_ctx->strategy->SetIdleTimeoutMs(active_ms, inactive_ms);
+  return display_comp_ctx->strategy->SetIdleTimeoutMs(active_ms);
 }
 
 void CompManager::ProcessIdleTimeout(Handle display_ctx) {
@@ -455,6 +456,7 @@ void CompManager::ProcessIdleTimeout(Handle display_ctx) {
   if (!display_comp_ctx) {
     return;
   }
+
   display_comp_ctx->idle_fallback = true;
 }
 

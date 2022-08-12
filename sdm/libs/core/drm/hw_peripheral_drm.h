@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2021, The Linux Foundation. All rights reserved.
+Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -41,14 +41,12 @@ struct CWBConfig {
   sde_drm::DRMDisplayToken token = {};
 };
 
-class HWPeripheralDRM : public HWDeviceDRM, public PanelFeaturePropertyIntf {
+class HWPeripheralDRM : public HWDeviceDRM {
  public:
   explicit HWPeripheralDRM(int32_t display_id, BufferAllocator *buffer_allocator,
                            HWInfoInterface *hw_info_intf);
   virtual ~HWPeripheralDRM() {}
-  virtual PanelFeaturePropertyIntf *GetPanelFeaturePropertyIntf() { return this; }
-  virtual int GetPanelFeature(PanelFeaturePropertyInfo *feature_info);
-  virtual int SetPanelFeature(const PanelFeaturePropertyInfo &feature_info);
+
  protected:
   virtual DisplayError Init();
   virtual DisplayError Validate(HWLayers *hw_layers);
@@ -85,7 +83,6 @@ class HWPeripheralDRM : public HWDeviceDRM, public PanelFeaturePropertyIntf {
                                 int64_t *release_fence_fd);
   void ConfigureConcurrentWriteback(LayerStack *stack);
   void PostCommitConcurrentWriteback(LayerBuffer *output_buffer);
-  void CreatePanelFeaturePropertyMap();
   void SetIdlePCState() {
     drm_atomic_intf_->Perform(sde_drm::DRMOps::CRTC_SET_IDLE_PC_STATE, token_.crtc_id,
                               idle_pc_state_);
@@ -108,7 +105,6 @@ class HWPeripheralDRM : public HWDeviceDRM, public PanelFeaturePropertyIntf {
   void PopulateBitClkRates();
   std::vector<uint64_t> bitclk_rates_;
   std::string brightness_base_path_ = "";
-  std::map<PanelFeaturePropertyID, sde_drm::DRMPanelFeatureID> panel_feature_property_map_ {};
 };
 
 }  // namespace sdm
